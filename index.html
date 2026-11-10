@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STYLE DEGREE // Premium Streetwear</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'sans': ['Space Grotesk', 'sans-serif'], 'display': ['Syne', 'sans-serif'] },
+                    colors: { street: { dark: '#050505', card: '#0f0f11', border: '#27272a', accent: '#f3f4f6' } }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #050507; 
+            color: #f4f4f5; 
+            -webkit-font-smoothing: antialiased; 
+            margin: 0; 
+            padding: 0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(220, 38, 38, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(39, 39, 42, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 15% 70%, rgba(220, 38, 38, 0.05) 0%, transparent 50%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        h1, h2, h3, .brand-font { font-family: 'Syne', sans-serif; }
+        .categories-wrapper { width: 100%; overflow-x: auto; overflow-y: hidden; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 4px; }
+        .categories-wrapper::-webkit-scrollbar { display: none; }
+        .categories-track { display: inline-flex; gap: 12px; min-width: max-content; }
+        
+        .banner-slide { opacity: 0; visibility: hidden; transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out; z-index: 0; }
+        .banner-slide.active { opacity: 1; visibility: visible; z-index: 10; }
+
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            display: inline-flex;
+            white-space: nowrap;
+            animation: marquee 22s linear infinite;
+        }
+        .marquee-wrapper:hover .animate-marquee {
+            animation-play-state: paused;
+        }
+
+        #loader-screen {
+            position: fixed; inset: 0; background-color: #050505; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        #loader-screen.hidden-loader { opacity: 0; visibility: hidden; pointer-events: none; }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.3; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+        .loader-pulse { animation: pulseGlow 1.2s infinite ease-in-out; }
+        @keyframes loadingBar {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .animate-bar { animation: loadingBar 1s infinite linear; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden w-full relative text-zinc-100">
+    
+    <div id="loader-screen">
+        <div class="flex flex-col items-center space-y-4 text-center px-4">
+            <span class="brand-font text-3xl sm:text-5xl font-extrabold tracking-[0.2em] uppercase text-white loader-pulse">
+                STYLE DEGREE<span class="text-red-600">.</span>
+            </span>
+            <div class="w-36 h-1 bg-zinc-800 rounded-full overflow-hidden relative">
+                <div class="absolute inset-0 bg-red-600 animate-bar"></div>
+            </div>
+            <p class="text-[11px] text-zinc-500 uppercase tracking-[0.3em] font-bold mt-2">Loading Gateway...</p>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const loader = document.getElementById('loader-screen');
+            if (loader) loader.classList.add('hidden-loader');
+        }, 600);
+    </script>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Quick View Modal Container -->
+    <div id="quick-view-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-[#0f0f12]/95 border border-zinc-800 max-w-2xl w-full rounded-2xl overflow-hidden relative shadow-2xl backdrop-blur-xl" onclick="event.stopPropagation()">
+            <button onclick="window.closeQuickView()" class="absolute top-4 right-4 text-zinc-400 hover:text-white p-2 z-10">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+            <div id="quick-view-content" class="p-6"></div>
+        </div>
+    </div>
+
+    <!-- Marquee Ticker -->
+    <div class="fixed top-0 w-full z-50 bg-red-600 text-white overflow-hidden py-1.5 border-b border-red-700 select-none marquee-wrapper">
+        <div class="animate-marquee flex items-center gap-8 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em]">
+            <span>🔥 FREE EXPRESS SHIPPING ACROSS INDIA ON ORDERS OVER ₹2000</span>
+            <span class="text-black">•</span>
+            <span>DROP 01 IS NOW LIVE // LIMITED PRODUCTION</span>
+            <span class="text-black">•</span>
+            <span>BOX-FIT HEAVYWEIGHT ESSENTIALS // 240+ GSM</span>
+            <span class="text-black">•</span>
+            <span>SECURE PAYMENT VIA RAZORPAY &amp; CASH ON DELIVERY</span>
+            <span class="text-black">•</span>
+            <span>🔥 FREE EXPRESS SHIPPING ACROSS INDIA ON ORDERS OVER ₹2000</span>
+            <span class="text-black">•</span>
+            <span>DROP 01 IS NOW LIVE // LIMITED PRODUCTION</span>
+            <span class="text-black">•</span>
+            <span>BOX-FIT HEAVYWEIGHT ESSENTIALS // 240+ GSM</span>
+            <span class="text-black">•</span>
+            <span>SECURE PAYMENT VIA RAZORPAY &amp; CASH ON DELIVERY</span>
+            <span class="text-black">•</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-[31px] w-full z-40 bg-[#050507]/90 backdrop-blur-xl border-b border-zinc-800/80 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <div class="flex items-center sm:hidden">
+                    <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="text-zinc-400 hover:text-white p-2 -ml-2">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="flex-shrink-0 flex items-center cursor-pointer absolute left-1/2 transform -translate-x-1/2 sm:static sm:translate-x-0" onclick="window.navigate('home')">
+                    <span class="brand-font font-extrabold text-lg sm:text-2xl tracking-[0.15em] uppercase text-white">STYLE DEGREE<span class="text-red-600">.</span></span>
+                </div>
+                
+                <div class="hidden sm:flex sm:space-x-8 items-center">
+                    <button onclick="window.navigate('home')" class="text-zinc-300 hover:text-white px-1 pt-1 text-xs font-bold uppercase tracking-widest transition-colors">Shop Catalog</button>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.navigate('cart')" class="text-zinc-300 hover:text-white transition-colors relative flex items-center p-2 bg-zinc-900/60 border border-zinc-800 rounded-full hover:border-zinc-700">
+                        <i class="ph ph-shopping-bag text-xl"></i>
+                        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="mobile-menu" class="hidden sm:hidden bg-[#0a0a0c]/98 backdrop-blur-2xl border-b border-zinc-800 absolute w-full shadow-2xl z-40">
+            <div class="flex flex-col px-6 py-5 space-y-4">
+                <button onclick="window.navigate('home'); document.getElementById('mobile-menu').classList.add('hidden')" class="text-left text-white font-bold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">Shop Catalog</button>
+                <button onclick="window.navigate('cart'); document.getElementById('mobile-menu').classList.add('hidden')" class="text-left text-white font-bold text-sm uppercase tracking-wider border-b border-zinc-800 pb-3">Cart Bag</button>
+                <button onclick="window.navigate('admin'); document.getElementById('mobile-menu').classList.add('hidden')" class="text-left text-zinc-500 font-medium text-xs">Admin Portal</button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="app-root" class="flex-grow flex flex-col w-full pt-24 sm:pt-28 opacity-0 transition-opacity duration-300 relative z-10"></main>
+
+    <footer class="bg-[#030305]/90 border-t border-zinc-900/80 mt-auto backdrop-blur-md relative z-10">
+        <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-center space-y-3">
+                <span class="brand-font font-bold text-xs tracking-[0.2em] uppercase text-zinc-400">STYLE DEGREE // ALL RIGHTS RESERVED</span>
+                <p class="text-[11px] text-zinc-600 text-center tracking-wide">
+                    Elevated Streetwear Essentials &copy; 2026. 
+                    <a href="#" onclick="event.preventDefault(); window.navigate('admin')" class="text-zinc-500 hover:text-white transition-colors ml-2 underline">Admin Access</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyARt-UJnhiPAM9YeJq1-9DuZn4Su_xLie0",
+            authDomain: "style-degree.firebaseapp.com",
+            projectId: "style-degree",
+            storageBucket: "style-degree.firebasestorage.app",
+            messagingSenderId: "406070998655",
+            appId: "1:406070998655:web:73f4a0e5fa5b01ca34714a"
+        };
+
+        const STORAGE_KEY = 'styledegree_cart_v1';
+        function loadStoredCart() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+        function saveStoredCart(cart) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+            } catch (e) {}
+        }
+
+        const state = {
+            route: 'home',
+            cart: loadStoredCart(),
+            products: [],
+            orders: [],
+            isAuthReady: false,
+            db: null,
+            productsUnsubscribe: null,
+            ordersUnsubscribe: null,
+            currentCategory: 'All', 
+            isAdminAuthenticated: false,
+            currentBanner: 0,
+            adminFilter: 'all'
+        };
+
+        let bannerInterval = null;
+
+        async function initApp() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                state.db = getFirestore(app);
+                state.isAuthReady = true;
+
+                // Pure realtime sync - NO auto-seeding starter items
+                state.productsUnsubscribe = onSnapshot(collection(state.db, 'products'), (snapshot) => {
+                    state.products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    if (state.route === 'home') renderView();
+                });
+            } catch (err) { 
+                console.error("Firebase init failed:", err);
+                state.products = [];
+            }
+            
+            renderView();
+            updateCartBadge();
+            const loader = document.getElementById('loader-screen');
+            if (loader) loader.classList.add('hidden-loader');
+        }
+
+        window.navigate = (route) => {
+            if (bannerInterval) clearInterval(bannerInterval);
+            state.route = route; 
+            renderView(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        function renderView() {
+            const root = document.getElementById('app-root');
+            if (!root) return;
+            root.classList.remove('opacity-100');
+            setTimeout(() => {
+                root.innerHTML = '';
+                if (state.route === 'home') {
+                    root.appendChild(ViewHome());
+                    startBannerSlider();
+                } else if (state.route === 'cart') {
+                    root.appendChild(ViewCart());
+                } else if (state.route === 'admin') {
+                    root.appendChild(ViewAdmin());
+                }
+                updateCartBadge();
+                void root.offsetWidth; 
+                root.classList.add('opacity-100');
+            }, 100);
+        }
+
+        function ViewHome() {
+            const container = document.createElement('div');
+            container.className = 'w-full flex flex-col pb-20';
+
+            container.innerHTML = `
+                <div class="relative w-full min-h-[55vh] sm:min-h-[75vh] bg-gradient-to-b from-[#09090d]/90 via-[#07070a] to-transparent flex flex-col items-center justify-center pt-8 pb-12 px-4 overflow-hidden border-b border-zinc-800/80">
+                    <div class="banner-slide ${state.currentBanner === 0 ? 'active' : ''} w-full flex flex-col items-center justify-center absolute inset-0 pt-6 px-2">
+                        <div class="text-center z-20 mb-2 max-w-2xl mx-auto px-4">
+                            <span class="bg-white/90 backdrop-blur-md text-black text-[9px] font-extrabold px-3 py-1 uppercase tracking-[0.2em] rounded-full mb-3 inline-block shadow-lg">Drop 01 // Heavyweight Tees</span>
+                            <h1 class="brand-font text-3xl sm:text-6xl md:text-7xl font-extrabold uppercase tracking-tight text-white mb-2 leading-none drop-shadow-md">The New Era</h1>
+                            <p class="text-zinc-400 text-xs sm:text-sm tracking-wide">Elevated boxy silhouettes crafted for daily movement.</p>
+                        </div>
+                        <div class="relative w-full h-[200px] sm:h-[360px] flex justify-center items-start mt-2">
+                            <div class="absolute top-2 left-[-10%] w-[120%] h-[3px] bg-gradient-to-r from-transparent via-red-600/40 to-transparent"></div>
+                            <div class="relative z-10 flex gap-6 sm:gap-16 items-start scale-90 sm:scale-100">
+                                <div class="w-32 h-44 sm:w-44 sm:h-60 flex items-center justify-center drop-shadow-2xl"><img src="img1.png" class="max-w-full max-h-full object-contain"></div>
+                                <div class="w-28 h-52 sm:w-36 sm:h-68 flex items-center justify-center drop-shadow-2xl mt-4"><img src="img2.png" class="max-w-full max-h-full object-contain"></div>
+                                <div class="w-32 h-44 sm:w-44 sm:h-60 flex items-center justify-center drop-shadow-2xl"><img src="img3.png" class="max-w-full max-h-full object-contain"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="banner-slide ${state.currentBanner === 1 ? 'active' : ''} w-full flex flex-col items-center justify-center absolute inset-0 pt-6 px-2">
+                        <div class="text-center z-20 mb-2 max-w-2xl mx-auto px-4">
+                            <span class="bg-red-600 text-white text-[9px] font-extrabold px-3 py-1 uppercase tracking-[0.2em] rounded-full mb-3 inline-block shadow-lg">Limited // Outerwear</span>
+                            <h1 class="brand-font text-3xl sm:text-6xl md:text-7xl font-extrabold uppercase tracking-tight text-white mb-2 leading-none drop-shadow-md">French Terry Hoodies</h1>
+                            <p class="text-zinc-400 text-xs sm:text-sm tracking-wide">Heavy-blend fleece designed for uncompromising winter styling.</p>
+                        </div>
+                        <div class="relative w-full h-[200px] sm:h-[360px] flex justify-center items-start mt-2">
+                            <div class="absolute top-2 left-[-10%] w-[120%] h-[3px] bg-gradient-to-r from-transparent via-red-600/40 to-transparent"></div>
+                            <div class="relative z-10 flex gap-8 sm:gap-20 items-start scale-90 sm:scale-100">
+                                <div class="w-32 h-44 sm:w-44 sm:h-60 flex items-center justify-center drop-shadow-2xl"><img src="img3.png" class="max-w-full max-h-full object-contain"></div>
+                                <div class="w-28 h-52 sm:w-36 sm:h-68 flex items-center justify-center drop-shadow-2xl mt-4"><img src="img1.png" class="max-w-full max-h-full object-contain"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="banner-slide ${state.currentBanner === 2 ? 'active' : ''} w-full flex flex-col items-center justify-center absolute inset-0 pt-6 px-2">
+                        <div class="text-center z-20 mb-2 max-w-2xl mx-auto px-4">
+                            <span class="bg-zinc-800/90 text-zinc-300 border border-zinc-700 text-[9px] font-extrabold px-3 py-1 uppercase tracking-[0.2em] rounded-full mb-3 inline-block shadow-lg">Technical // Bottoms</span>
+                            <h1 class="brand-font text-3xl sm:text-6xl md:text-7xl font-extrabold uppercase tracking-tight text-white mb-2 leading-none drop-shadow-md">Utility Cargo Pants</h1>
+                            <p class="text-zinc-400 text-xs sm:text-sm tracking-wide">Structured tactical fits with utilitarian pocket systems.</p>
+                        </div>
+                        <div class="relative w-full h-[200px] sm:h-[360px] flex justify-center items-start mt-2">
+                            <div class="absolute top-2 left-[-10%] w-[120%] h-[3px] bg-gradient-to-r from-transparent via-red-600/40 to-transparent"></div>
+                            <div class="relative z-10 flex gap-8 sm:gap-20 items-start scale-90 sm:scale-100">
+                                <div class="w-28 h-52 sm:w-36 sm:h-68 flex items-center justify-center drop-shadow-2xl"><img src="img2.png" class="max-w-full max-h-full object-contain"></div>
+                                <div class="w-32 h-44 sm:w-44 sm:h-60 flex items-center justify-center drop-shadow-2xl"><img src="img3.png" class="max-w-full max-h-full object-contain"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-3 z-30 flex gap-2">
+                        <span class="banner-dot ${state.currentBanner === 0 ? 'w-6 bg-white' : 'w-2 bg-zinc-600'} h-1.5 rounded-full transition-all cursor-pointer" onclick="window.currentSlide(0)"></span>
+                        <span class="banner-dot ${state.currentBanner === 1 ? 'w-6 bg-white' : 'w-2 bg-zinc-600'} h-1.5 rounded-full transition-all cursor-pointer" onclick="window.currentSlide(1)"></span>
+                        <span class="banner-dot ${state.currentBanner === 2 ? 'w-6 bg-white' : 'w-2 bg-zinc-600'} h-1.5 rounded-full transition-all cursor-pointer" onclick="window.currentSlide(2)"></span>
+                    </div>
+                </div>
+            `;
+
+            const categories = ['All', 'Caps', 'T-Shirts', 'Shirts', 'Pants', 'Hoodies', 'Accessories'];
+            const filterHTML = categories.map(cat => {
+                const isActive = state.currentCategory === cat;
+                const activeClasses = isActive 
+                    ? 'bg-white text-black shadow-lg shadow-white/10 font-extrabold' 
+                    : 'bg-zinc-900/50 backdrop-blur-md text-zinc-400 hover:text-white border border-zinc-800/80 hover:border-zinc-700';
+                return `<button onclick="window.setCategory('${cat}')" class="flex-shrink-0 whitespace-nowrap px-5 py-2 rounded-full text-[11px] sm:text-xs uppercase tracking-[0.15em] transition-all duration-300 ${activeClasses}">${cat}</button>`;
+            }).join('');
+
+            const filteredProducts = state.currentCategory === 'All' 
+                ? state.products 
+                : state.products.filter(p => p.category === state.currentCategory);
+
+            let productsGridHTML = '';
+            if (filteredProducts.length === 0) {
+                productsGridHTML = `<div class="col-span-full py-20 text-center text-zinc-500 tracking-wider uppercase text-xs bg-[#0d0d10]/40 border border-zinc-800/60 rounded-2xl">No gear currently available in this sector.</div>`;
+            } else {
+                filteredProducts.forEach(p => {
+                    const sizes = p.sizes || ['S', 'M', 'L', 'XL'];
+                    const sizeOptions = sizes.map(sz => `<button onclick="window.selectSize('${p.id}', '${sz}', event)" id="size-${p.id}-${sz}" class="size-btn-${p.id} px-2 py-0.5 text-[10px] font-bold border rounded bg-zinc-900/80 text-zinc-300 border-zinc-800 hover:border-white transition-all">${sz}</button>`).join('');
+                    
+                    productsGridHTML += `
+                        <div class="group relative flex flex-col bg-[#0d0d10]/70 backdrop-blur-md border border-zinc-800/80 rounded-xl overflow-hidden hover:border-zinc-600 transition-all duration-300 p-3 hover:shadow-2xl hover:shadow-black/50 hover:-translate-y-1">
+                            <div onclick="window.openQuickView('${p.id}')" class="cursor-pointer w-full bg-[#131317]/80 rounded-lg overflow-hidden relative mb-3 flex items-center justify-center p-3 border border-zinc-800/50">
+                                <img src="${p.img}" alt="${p.name}" class="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/300x400/131317/71717a?text=Apparel'">
+                                <span class="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md text-zinc-300 text-[9px] font-bold px-2 py-1 rounded border border-zinc-700 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i class="ph ph-eye"></i> Quick View
+                                </span>
+                            </div>
+                            <div class="px-1 flex flex-col flex-grow">
+                                <p class="text-[9px] font-semibold text-zinc-500 mb-1 uppercase tracking-[0.2em]">${p.category}</p>
+                                <h3 onclick="window.openQuickView('${p.id}')" class="cursor-pointer text-xs sm:text-sm font-semibold text-white mb-1 line-clamp-1 hover:underline">${p.name}</h3>
+                                <p class="text-xs sm:text-sm font-extrabold text-white mb-3">₹${Number(p.price).toLocaleString('en-IN')}</p>
+                                
+                                <div class="mb-3">
+                                    <p class="text-[9px] font-bold text-zinc-400 uppercase mb-1 tracking-wider">Size:</p>
+                                    <div class="flex flex-wrap gap-1" id="sizes-container-${p.id}">
+                                        ${sizeOptions}
+                                    </div>
+                                </div>
+
+                                <button onclick="window.addToCartWithSelectedSize('${p.id}')" class="mt-auto w-full bg-white text-black py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] rounded-lg shadow-md hover:bg-zinc-200 transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const gridDiv = document.createElement('div');
+            gridDiv.id = "product-grid";
+            gridDiv.className = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 w-full";
+            gridDiv.innerHTML = `
+                <div class="flex flex-col lg:flex-row justify-between lg:items-end border-b border-zinc-800 pb-4 mb-8 gap-4">
+                    <h2 class="brand-font text-2xl sm:text-4xl font-extrabold tracking-wide text-white uppercase">Latest <span class="text-red-600">Drops</span></h2>
+                    <div class="categories-wrapper">
+                        <div class="categories-track">
+                            ${filterHTML}
+                        </div>
+                    </div>
+                </div>
+                <div id="dynamic-product-container" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
+                    ${productsGridHTML}
+                </div>
+            `;
+            container.appendChild(gridDiv);
+            return container;
+        }
+
+        window.openQuickView = (productId) => {
+            const p = state.products.find(x => x.id === productId);
+            if (!p) return;
+
+            const sizes = p.sizes || ['S', 'M', 'L', 'XL'];
+            const sizeButtons = sizes.map(sz => `
+                <button onclick="window.selectSize('${p.id}', '${sz}', event)" id="size-${p.id}-${sz}" class="size-btn-${p.id} px-3 py-1.5 text-xs font-bold border rounded-lg bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-white transition-all">${sz}</button>
+            `).join('');
+
+            document.getElementById('quick-view-content').innerHTML = `
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <div class="w-full sm:w-1/2 aspect-[3/4] bg-[#141417] rounded-xl flex items-center justify-center p-4 border border-zinc-800">
+                        <img src="${p.img}" class="max-w-full max-h-full object-contain" onerror="this.src='https://placehold.co/300x400/131317/71717a?text=Apparel'">
+                    </div>
+                    <div class="w-full sm:w-1/2 flex flex-col justify-between">
+                        <div>
+                            <span class="text-[9px] font-bold text-red-500 uppercase tracking-widest">${p.category} // HEAVYWEIGHT</span>
+                            <h2 class="brand-font text-xl sm:text-2xl font-black uppercase text-white mt-1 mb-2">${p.name}</h2>
+                            <p class="text-xl font-extrabold text-white mb-4">₹${Number(p.price).toLocaleString('en-IN')}</p>
+                            
+                            <div class="space-y-2 border-y border-zinc-800 py-3 mb-4 text-xs text-zinc-400">
+                                <div class="flex justify-between"><span>Fabric Weight:</span><span class="font-bold text-white">${p.gsm || '240 GSM French Terry'}</span></div>
+                                <div class="flex justify-between"><span>Silhouette:</span><span class="font-bold text-white">${p.fit || 'Custom Boxy Fit'}</span></div>
+                                <div class="flex justify-between"><span>Craftsmanship:</span><span class="font-bold text-white">Pre-Shrunk Organic Cotton</span></div>
+                            </div>
+
+                            <p class="text-[10px] font-bold uppercase text-zinc-400 mb-2">Select Your Size:</p>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                ${sizeButtons}
+                            </div>
+                        </div>
+
+                        <button onclick="window.addToCartWithSelectedSize('${p.id}'); window.closeQuickView()" class="w-full bg-white text-black py-3.5 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-zinc-200 transition-colors shadow-lg">
+                            Add to Bag
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('quick-view-modal').classList.remove('hidden');
+            document.getElementById('quick-view-modal').classList.add('flex');
+        };
+
+        window.closeQuickView = () => {
+            const modal = document.getElementById('quick-view-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        function startBannerSlider() {
+            if (bannerInterval) clearInterval(bannerInterval);
+
+            const slides = document.querySelectorAll('.banner-slide');
+            const dots = document.querySelectorAll('.banner-dot');
+            if (slides.length === 0) return;
+
+            bannerInterval = setInterval(() => {
+                slides[state.currentBanner].classList.remove('active');
+                dots[state.currentBanner].classList.remove('w-6', 'bg-white');
+                dots[state.currentBanner].classList.add('w-2', 'bg-zinc-600');
+
+                state.currentBanner = (state.currentBanner + 1) % slides.length;
+
+                slides[state.currentBanner].classList.add('active');
+                dots[state.currentBanner].classList.remove('w-2', 'bg-zinc-600');
+                dots[state.currentBanner].classList.add('w-6', 'bg-white');
+            }, 4000);
+        }
+
+        window.currentSlide = (index) => {
+            if (bannerInterval) clearInterval(bannerInterval);
+            const slides = document.querySelectorAll('.banner-slide');
+            const dots = document.querySelectorAll('.banner-dot');
+            if (slides.length === 0) return;
+
+            slides[state.currentBanner].classList.remove('active');
+            dots[state.currentBanner].classList.remove('w-6', 'bg-white');
+            dots[state.currentBanner].classList.add('w-2', 'bg-zinc-600');
+
+            state.currentBanner = index;
+
+            slides[state.currentBanner].classList.add('active');
+            dots[state.currentBanner].classList.remove('w-2', 'bg-zinc-600');
+            dots[state.currentBanner].classList.add('w-6', 'bg-white');
+            startBannerSlider();
+        };
+
+        const selectedSizes = {};
+        window.selectSize = (productId, size, event) => {
+            event.stopPropagation();
+            selectedSizes[productId] = size;
+            document.querySelectorAll(`.size-btn-${productId}`).forEach(btn => {
+                btn.classList.remove('bg-white', 'text-black', 'border-white');
+                btn.classList.add('bg-zinc-900', 'text-zinc-300', 'border-zinc-700');
+            });
+            const activeBtn = document.getElementById(`size-${productId}-${size}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-zinc-900', 'text-zinc-300', 'border-zinc-700');
+                activeBtn.classList.add('bg-white', 'text-black', 'border-white');
+            }
+        };
+
+        window.addToCartWithSelectedSize = (productId) => {
+            const product = state.products.find(x => x.id === productId);
+            if (!product) return;
+            const chosenSize = selectedSizes[productId] || (product.sizes ? product.sizes[0] : 'M');
+            
+            state.cart.push({ ...product, selectedSize: chosenSize });
+            saveStoredCart(state.cart);
+            updateCartBadge();
+            showToast(`Added ${product.name} (${chosenSize}) to cart`);
+        };
+
+        function ViewCart() {
+            const container = document.createElement('div');
+            container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 w-full flex-grow flex flex-col';
+
+            if (state.cart.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center flex-grow py-20">
+                        <i class="ph ph-shopping-bag text-5xl sm:text-6xl text-zinc-700 mb-6"></i>
+                        <h2 class="brand-font text-2xl sm:text-3xl font-bold uppercase mb-4 text-center text-white">Your cart is <span class="text-red-600">empty</span></h2>
+                        <button onclick="window.navigate('home')" class="bg-white text-black px-8 py-3.5 uppercase text-[10px] sm:text-xs tracking-[0.2em] font-black rounded-lg shadow-lg hover:bg-zinc-200">Explore Drop</button>
+                    </div>
+                `;
+                return container;
+            }
+
+            const subtotal = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+            const gst = Math.round(subtotal * 0.05);
+            const shipping = subtotal > 2000 ? 0 : 99; 
+            const grandTotal = subtotal + gst + shipping;
+
+            let cartItemsHTML = state.cart.map((item, index) => `
+                <div class="py-5 flex items-start sm:items-center gap-4 border-b border-zinc-800/80">
+                    <div class="w-16 h-24 sm:w-20 sm:h-28 bg-[#141417]/80 rounded-lg flex items-center justify-center p-2 border border-zinc-800">
+                        <img src="${item.img}" class="max-w-full max-h-full object-contain" onerror="this.src='https://placehold.co/100x120/141418/71717a?text=Item'">
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-white">${item.name}</h3>
+                        <p class="text-xs text-zinc-400 mt-0.5">Size: <span class="font-bold text-white">${item.selectedSize}</span></p>
+                        <button onclick="window.removeFromCart(${index})" class="text-xs text-zinc-500 hover:text-white mt-2 transition-colors underline">Remove</button>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-extrabold text-white">₹${Number(item.price).toLocaleString('en-IN')}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <h1 class="brand-font text-2xl sm:text-4xl font-extrabold tracking-wide text-white uppercase mb-8">Shopping <span class="text-red-600">Cart</span></h1>
+                <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 lg:items-start">
+                    <div class="w-full lg:w-3/5 space-y-4">
+                        <div class="border-t border-zinc-800">
+                            ${cartItemsHTML}
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-2/5 bg-[#0e0e12]/80 backdrop-blur-xl p-6 sm:p-7 rounded-2xl border border-zinc-800/80 shadow-2xl">
+                        <h2 class="brand-font text-lg font-bold text-white mb-5 uppercase tracking-wide">Order Summary</h2>
+                        
+                        <div class="space-y-2 text-xs sm:text-sm text-zinc-400 mb-5 border-b border-zinc-800 pb-4">
+                            <div class="flex justify-between"><span>Subtotal</span><span class="text-white font-medium">₹${subtotal.toLocaleString('en-IN')}</span></div>
+                            <div class="flex justify-between"><span>Estimated GST (5%)</span><span class="text-white font-medium">₹${gst.toLocaleString('en-IN')}</span></div>
+                            <div class="flex justify-between"><span>Shipping</span><span>${shipping === 0 ? '<span class="text-emerald-400 font-bold uppercase text-[10px]">Free</span>' : '₹' + shipping}</span></div>
+                        </div>
+
+                        <div class="flex justify-between text-base sm:text-lg font-extrabold text-white mb-6 border-b border-zinc-800 pb-5">
+                            <span>Total Amount</span><span class="text-red-500">₹${grandTotal.toLocaleString('en-IN')}</span>
+                        </div>
+
+                        <form id="checkout-form" onsubmit="window.processCheckout(event)" class="space-y-3.5">
+                            <input type="text" id="c-name" required class="w-full px-4 py-3 bg-[#131317]/80 border border-zinc-800 rounded-lg text-sm text-white focus:border-white outline-none" placeholder="Full Name">
+                            <input type="tel" id="c-phone" required class="w-full px-4 py-3 bg-[#131317]/80 border border-zinc-800 rounded-lg text-sm text-white focus:border-white outline-none" placeholder="10-digit Phone Number">
+                            <textarea id="c-address" required rows="2" class="w-full px-4 py-3 bg-[#131317]/80 border border-zinc-800 rounded-lg text-sm text-white focus:border-white outline-none" placeholder="Full Shipping Address"></textarea>
+                            
+                            <div class="pt-1">
+                                <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Payment Method:</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center justify-center gap-1.5 p-3 border rounded-lg cursor-pointer border-white bg-white text-black text-[11px] font-bold shadow">
+                                        <input type="radio" name="payment-method" value="COD" checked onclick="window.togglePaymentType('COD')"> Cash on Delivery
+                                    </label>
+                                    <label class="flex items-center justify-center gap-1.5 p-3 border rounded-lg cursor-pointer border-zinc-800 bg-[#131317] text-zinc-300 text-[11px] font-bold">
+                                        <input type="radio" name="payment-method" value="RAZORPAY" onclick="window.togglePaymentType('RAZORPAY')"> Razorpay Online
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="checkout-btn" class="w-full bg-white text-black py-4 mt-2 font-black uppercase tracking-[0.15em] text-[10px] sm:text-xs rounded-lg transition-all hover:bg-zinc-200 shadow-xl">Complete Order</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            return container;
+        }
+
+        window.togglePaymentType = (type) => {
+            const submitBtn = document.getElementById('checkout-btn');
+            if (type === 'RAZORPAY') {
+                submitBtn.innerText = 'Pay via Razorpay';
+                submitBtn.classList.add('bg-blue-600', 'text-white');
+                submitBtn.classList.remove('bg-white', 'text-black');
+            } else {
+                submitBtn.innerText = 'Complete Order';
+                submitBtn.classList.remove('bg-blue-600', 'text-white');
+                submitBtn.classList.add('bg-white', 'text-black');
+            }
+        };
+
+        window.processCheckout = async (e) => {
+            e.preventDefault();
+            if (state.cart.length === 0 || !state.isAuthReady) return;
+
+            const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+            const subtotal = state.cart.reduce((s, i) => s + Number(i.price), 0);
+            const gst = Math.round(subtotal * 0.05);
+            const shipping = subtotal > 2000 ? 0 : 99;
+            const totalAmount = subtotal + gst + shipping;
+
+            const customerName = document.getElementById('c-name').value;
+            const customerPhone = document.getElementById('c-phone').value;
+            const customerAddress = document.getElementById('c-address').value;
+
+            if (paymentMethod === 'RAZORPAY') {
+                const options = {
+                    key: "rzp_test_Tw5lsSattrYmKw",
+                    amount: totalAmount * 100,
+                    currency: "INR",
+                    name: "STYLE DEGREE",
+                    description: "Streetwear Order Checkout",
+                    handler: async function (response) {
+                        showToast("Payment successful! ID: " + response.razorpay_payment_id);
+                        await saveOrderToFirebase({
+                            customerName, customerPhone, customerAddress,
+                            paymentMethod: 'Razorpay Test (Paid)',
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            subtotal, gst, shipping,
+                            items: state.cart, total: totalAmount,
+                            status: 'Paid & Verified',
+                            createdAt: new Date().toISOString()
+                        });
+                    },
+                    prefill: { name: customerName, contact: customerPhone },
+                    theme: { color: "#050505" }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+                return;
+            }
+
+            try {
+                await saveOrderToFirebase({
+                    customerName, customerPhone, customerAddress,
+                    paymentMethod: 'Cash on Delivery',
+                    subtotal, gst, shipping,
+                    items: state.cart, total: totalAmount,
+                    status: 'Pending COD',
+                    createdAt: new Date().toISOString()
+                });
+            } catch (err) {
+                showToast("Failed to place order.", "error");
+            }
+        };
+
+        async function saveOrderToFirebase(orderData) {
+            const docRef = await addDoc(collection(state.db, 'orders'), orderData);
+            const orderId = docRef.id;
+            
+            state.cart = []; 
+            saveStoredCart(state.cart);
+            updateCartBadge();
+            
+            showToast("Order placed successfully!");
+            triggerWhatsAppConfirmation(orderId, orderData);
+            window.navigate('home');
+        }
+
+        function triggerWhatsAppConfirmation(orderId, order) {
+            const cleanPhone = order.customerPhone.replace(/[^0-9]/g, '');
+            const targetPhone = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+            
+            const message = encodeURIComponent(
+                `*STYLE DEGREE // ORDER CONFIRMED*\n` +
+                `------------------------------------\n` +
+                `Hey ${order.customerName},\n` +
+                `Your streetwear order has been secured!\n\n` +
+                `*Order ID:* ${orderId.slice(0,8).toUpperCase()}\n` +
+                `*Items:* ${order.items.map(i => i.name + ' (' + i.selectedSize + ')').join(', ')}\n` +
+                `*Total Amount:* ₹${order.total.toLocaleString('en-IN')}\n` +
+                `*Payment:* ${order.paymentMethod}\n\n` +
+                `Thank you for shopping with STYLE DEGREE!`
+            );
+            
+            const waUrl = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${message}`;
+            window.open(waUrl, '_blank');
+        }
+
+        window.contactCustomerWhatsApp = (customerPhone, customerName, orderId, totalAmount, status) => {
+            const cleanPhone = (customerPhone || '').replace(/[^0-9]/g, '');
+            const targetPhone = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+            
+            const message = encodeURIComponent(
+                `Hello ${customerName},\n\n` +
+                `This is STYLE DEGREE regarding your order *#${orderId.slice(0,8).toUpperCase()}* (Total: ₹${Number(totalAmount).toLocaleString('en-IN')}).\n` +
+                `Current Status: *${status}*.\n\n` +
+                `We are reaching out to confirm your delivery details before dispatch. Let us know if you need any assistance!`
+            );
+            
+            const waUrl = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${message}`;
+            window.open(waUrl, '_blank');
+        };
+
+        function ViewAdmin() {
+            const container = document.createElement('div');
+            container.className = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 w-full flex-grow';
+
+            if (!state.isAdminAuthenticated) {
+                container.innerHTML = `
+                    <div class="max-w-md mx-auto mt-10 p-6 sm:p-8 bg-[#0e0e12]/90 backdrop-blur-xl border border-zinc-800 rounded-2xl shadow-2xl text-center">
+                        <i class="ph ph-lock-key text-4xl sm:text-5xl text-zinc-600 mb-4"></i>
+                        <h2 class="brand-font text-xl sm:text-2xl font-bold tracking-wide text-white uppercase mb-2">Admin <span class="text-red-600">Portal</span></h2>
+                        <form onsubmit="window.handleAdminLogin(event)" class="space-y-4 mt-6">
+                            <input type="password" id="admin-pwd" placeholder="Enter passcode" class="w-full px-4 py-3 bg-[#141417] border border-zinc-800 text-white rounded-lg text-sm outline-none focus:border-white" required>
+                            <button type="submit" class="w-full bg-white text-black py-3.5 font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-zinc-200">Authenticate</button>
+                        </form>
+                    </div>
+                `;
+                return container;
+            }
+
+            if (!state.isAuthReady) {
+                container.innerHTML = `<div class="flex justify-center py-20"><i class="ph ph-spinner animate-spin text-3xl text-zinc-500"></i></div>`;
+                return container;
+            }
+
+            if (!state.ordersUnsubscribe) startOrderListener();
+
+            container.innerHTML = `
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 border-b border-zinc-800 pb-6 gap-4">
+                    <div>
+                        <h1 class="brand-font text-2xl sm:text-3xl font-extrabold tracking-wide text-white uppercase">Orders & <span class="text-red-600">Verification</span></h1>
+                        <p class="text-zinc-500 text-xs mt-1">Live synchronized sales &amp; payment queue</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-emerald-950 text-emerald-400 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border border-emerald-800 w-fit">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Orders Active
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-6" id="admin-filter-tabs">
+                    ${renderAdminFilterTabs()}
+                </div>
+
+                <div id="admin-orders-list" class="space-y-6">
+                    <div class="flex justify-center py-10"><i class="ph ph-spinner animate-spin text-2xl text-zinc-600"></i></div>
+                </div>
+            `;
+
+            if (state.orders.length > 0) setTimeout(renderAdminOrders, 50);
+            else if (state.ordersUnsubscribe) setTimeout(renderAdminOrders, 500);
+
+            return container;
+        }
+
+        function renderAdminFilterTabs() {
+            const tabs = [
+                { id: 'all', label: 'All Orders' },
+                { id: 'paid', label: 'Paid (Razorpay)' },
+                { id: 'cod', label: 'Pending COD' },
+                { id: 'accepted', label: 'Accepted' },
+                { id: 'cancelled', label: 'Cancelled' }
+            ];
+
+            return tabs.map(tab => {
+                const count = state.orders.filter(o => {
+                    if (tab.id === 'all') return true;
+                    const st = (o.status || '').toLowerCase();
+                    if (tab.id === 'paid') return st.includes('paid');
+                    if (tab.id === 'cod') return st.includes('cod');
+                    if (tab.id === 'accepted') return st === 'accepted';
+                    if (tab.id === 'cancelled') return st === 'cancelled';
+                    return false;
+                }).length;
+
+                const isActive = state.adminFilter === tab.id;
+                const activeClasses = isActive 
+                    ? 'bg-white text-black font-extrabold shadow' 
+                    : 'bg-[#0e0e12]/80 backdrop-blur-md text-zinc-400 hover:text-white border border-zinc-800';
+
+                return `
+                    <button onclick="window.setAdminFilter('${tab.id}')" class="px-3.5 py-1.5 rounded-lg text-[11px] uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeClasses}">
+                        <span>${tab.label}</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[9px] ${isActive ? 'bg-black text-white' : 'bg-zinc-800 text-zinc-300'}">${count}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.setAdminFilter = (filterKey) => {
+            state.adminFilter = filterKey;
+            const tabContainer = document.getElementById('admin-filter-tabs');
+            if (tabContainer) tabContainer.innerHTML = renderAdminFilterTabs();
+            renderAdminOrders();
+        };
+
+        window.handleAdminLogin = (e) => {
+            e.preventDefault();
+            if (document.getElementById('admin-pwd').value === 'admin') {
+                state.isAdminAuthenticated = true; 
+                showToast("Access granted"); 
+                renderView();
+            } else { 
+                showToast("Incorrect passcode", "error"); 
+            }
+        };
+
+        window.setCategory = (c) => { 
+            state.currentCategory = c; 
+            if (state.route === 'home') renderView(); 
+        };
+
+        window.removeFromCart = (i) => { 
+            state.cart.splice(i, 1); 
+            saveStoredCart(state.cart);
+            updateCartBadge(); 
+            if (state.route === 'cart') renderView(); 
+        };
+
+        function updateCartBadge() {
+            const b = document.getElementById('cart-badge');
+            if (b) { 
+                b.innerText = state.cart.length; 
+                state.cart.length > 0 ? b.classList.remove('hidden') : b.classList.add('hidden'); 
+            }
+        }
+
+        function startOrderListener() {
+            if (!state.isAuthReady) return;
+            state.ordersUnsubscribe = onSnapshot(collection(state.db, 'orders'), (snapshot) => {
+                state.orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                                          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                if (state.route === 'admin') {
+                    const tabContainer = document.getElementById('admin-filter-tabs');
+                    if (tabContainer) tabContainer.innerHTML = renderAdminFilterTabs();
+                    renderAdminOrders();
+                }
+            });
+        }
+
+        window.renderAdminOrders = () => {
+            const listEl = document.getElementById('admin-orders-list');
+            if (!listEl) return;
+
+            const filteredOrders = state.orders.filter(o => {
+                if (state.adminFilter === 'all') return true;
+                const st = (o.status || '').toLowerCase();
+                if (state.adminFilter === 'paid') return st.includes('paid');
+                if (state.adminFilter === 'cod') return st.includes('cod');
+                if (state.adminFilter === 'accepted') return st === 'accepted';
+                if (state.adminFilter === 'cancelled') return st === 'cancelled';
+                return true;
+            });
+
+            if (filteredOrders.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-12 bg-[#0e0e12]/80 border border-zinc-800 rounded-xl text-zinc-500 text-sm uppercase tracking-wider">No orders found in this filter</div>`;
+                return;
+            }
+
+            listEl.innerHTML = filteredOrders.map(order => {
+                let badgeClass = order.status.includes('Paid') || order.status === 'Accepted' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : order.status === 'Cancelled' ? 'bg-red-950 text-red-400 border border-red-800' : 'bg-amber-950 text-amber-400 border border-amber-800';
+                
+                let itemsHTML = order.items.map(item => `
+                    <div class="flex justify-between text-xs sm:text-sm text-zinc-300 mb-1">
+                        <span>${item.name} <span class="text-white font-semibold">(${item.selectedSize})</span></span>
+                        <span class="font-medium text-white">₹${Number(item.price).toLocaleString('en-IN')}</span>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="bg-[#0e0e12]/85 backdrop-blur-xl border border-zinc-800/90 rounded-xl overflow-hidden shadow-xl">
+                        <div class="bg-[#141417]/80 px-4 sm:px-6 py-3 border-b border-zinc-800 flex justify-between items-center">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Order ID</span>
+                                <span class="font-mono text-xs text-white font-bold">${order.id.slice(0,8).toUpperCase()}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-zinc-800/80 text-zinc-300 border border-zinc-700/50">${order.paymentMethod}</span>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${badgeClass}">${order.status}</span>
+                            </div>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-4">
+                            <div class="text-sm">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div>
+                                        <p class="font-bold text-white text-base">${order.customerName}</p>
+                                        <p class="text-zinc-400 font-mono text-xs mt-0.5">${order.customerPhone}</p>
+                                    </div>
+                                    <button onclick="window.contactCustomerWhatsApp('${order.customerPhone}', '${order.customerName.replace(/'/g, "\\'")}', '${order.id}', '${order.total}', '${order.status}')" class="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors w-full sm:w-auto shadow-md">
+                                        <i class="ph ph-whatsapp-logo text-base"></i> Chat on WhatsApp
+                                    </button>
+                                </div>
+                                <p class="text-zinc-400 mt-2 bg-[#131317]/80 p-2.5 rounded-lg border border-zinc-800/80 text-xs">${order.customerAddress}</p>
+                                ${order.razorpayPaymentId ? `<p class="text-xs text-blue-400 mt-2 font-medium bg-blue-950/50 border border-blue-900/50 p-2.5 rounded-lg">Razorpay ID: <span class="font-mono font-bold select-all text-white">${order.razorpayPaymentId}</span></p>` : ''}
+                            </div>
+
+                            <div class="border-t border-zinc-800 pt-4 space-y-1">
+                                ${itemsHTML}
+                                <div class="flex justify-between text-xs text-zinc-400 pt-2 border-t border-zinc-800"><span>Subtotal</span><span>₹${Number(order.subtotal || order.total).toLocaleString('en-IN')}</span></div>
+                                <div class="flex justify-between text-xs text-zinc-400"><span>GST (5%)</span><span>₹${Number(order.gst || 0).toLocaleString('en-IN')}</span></div>
+                                <div class="flex justify-between text-xs text-zinc-400"><span>Shipping</span><span>${order.shipping === 0 ? 'Free' : '₹' + Number(order.shipping || 0).toLocaleString('en-IN')}</span></div>
+                                <div class="flex justify-between items-center pt-2 mt-1 border-t border-zinc-800 font-extrabold text-white text-base"><span>Grand Total</span><span>₹${Number(order.total).toLocaleString('en-IN')}</span></div>
+                            </div>
+                            <div class="flex gap-2 pt-2">
+                                <button onclick="window.updateStatus('${order.id}', 'Accepted')" class="flex-1 bg-white text-black py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors shadow">Accept Order</button>
+                                <button onclick="window.updateStatus('${order.id}', 'Cancelled')" class="flex-1 bg-zinc-800 border border-zinc-700 text-zinc-300 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-700 transition-colors">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.updateStatus = async (id, status) => {
+            if (!state.isAuthReady) return;
+            try { 
+                await updateDoc(doc(state.db, 'orders', id), { status }); 
+                showToast(`Order marked as ${status}`); 
+            } catch (err) { 
+                showToast("Update failed", "error"); 
+            }
+        };
+
+        function showToast(msg, type = 'default') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `${type === 'error' ? 'bg-red-600' : 'bg-zinc-900 border border-zinc-700'} text-white px-4 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium transform transition-all duration-300 translate-y-10 opacity-0 flex items-center gap-2 backdrop-blur-md`;
+            toast.innerHTML = `<i class="ph ${type === 'error' ? 'ph-warning-circle' : 'ph-check-circle'} text-lg"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => { 
+                toast.classList.add('opacity-0'); 
+                setTimeout(() => toast.remove(), 300); 
+            }, 3000);
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
